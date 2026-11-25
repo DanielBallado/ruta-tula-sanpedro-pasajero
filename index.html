@@ -1,76 +1,236 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>¿Dónde viene mi combi?</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>*{box-sizing:border-box;font-family:Arial}body{margin:0;background:#f2f2f2}header{background:#0E7A3E;color:#fff;padding:14px;text-align:center}header h1{margin:0;font-size:19px}#map{height:380px;width:100%;background:#ddd}.card{margin:10px;background:#fff;border-radius:12px;padding:12px}.uno{border-left:6px solid #1976D2}.dos{border-left:6px solid #FF6F00}.eta{font-weight:bold;font-size:18px}.btn{width:calc(100% - 20px);margin:10px;background:#111;color:#fff;border:0;padding:14px;border-radius:10px;font-weight:bold}.chip{display:inline-block;background:#fff;border:2px solid #0E7A3E;color:#0E7A3E;padding:9px 10px;border-radius:20px;font-size:12px;font-weight:bold;margin:3px;cursor:pointer}.chip.on{background:#0E7A3E;color:#fff}.pin{width:54px;height:30px;border-radius:15px;border:3px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold}.a{background:#1976D2}.n{background:#FF6F00}.alerta{background:#FFF3CD;border:2px solid #FFC107;padding:10px;border-radius:10px;margin:10px;text-align:center;display:none}.alerta.on{display:block}.whats{background:#25D366;color:#fff;border:0;width:calc(100% - 20px);margin:0 10px 10px;padding:14px;border-radius:10px;font-weight:bold;font-size:15px;display:none}.whats.on{display:block}.toggle{background:#fff;margin:10px;border-radius:12px;padding:12px;text-align:center;border:2px solid #25D366}.toggle.off{border-color:#ccc;opacity:.7}.switch{font-size:16px;font-weight:bold}</style></head><body>
-<header><h1>🚌 ¿DÓNDE VIENE MI COMBI?</h1><p>● RUTA TULA - SAN PEDRO • EN VIVO</p></header>
-<button class="btn" onclick="ubi()">📍 USAR MI UBICACIÓN</button>
-<p id="yo" style="text-align:center;font-size:13px;margin:5px">O elige tu parada abajo 👇</p>
-<div style="text-align:center;padding:0 5px"><span class="chip" onclick="par('20.057641,-99.3436',0)">🚌 Terminal Tula</span><span class="chip" onclick="par('20.051927,-99.333021',1)">🏛️ Presidencia</span><span class="chip" onclick="par('20.0525,-99.3290',2)">➡️ Entrada Cielito</span><span class="chip" onclick="par('20.0550,-99.3275',3)">⬅️ Salida Cielito</span><span class="chip" onclick="par('20.056564,-99.326398',4)">🦐 Conchal</span></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Dónde viene mi combi? - Tula - San Pedro</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; width: 100%; font-family: Arial, sans-serif; background: #f2f2f2; }
+  body { max-width: 480px; margin: 0 auto; background: #ffffff; min-height: 100vh; }
+  header { background: #22c55e; color: white; text-align: center; padding: 16px 10px; }
+  header h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+  header p { margin: 5px 0 0; font-size: 13px; }
+  .wrap { padding: 12px; }
+  label { font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; }
+  select { width: 100%; padding: 13px; font-size: 16px; border: 2px solid #22c55e; border-radius: 10px; background: #fff; margin-bottom: 10px; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .btns button { flex: 1; min-width: 135px; padding: 12px 8px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
+  .verde { background: #22c55e; color: #fff; }
+  .gris { background: #e5e7eb; color: #111; }
+  .amarillo { background: #facc15; color: #111; }
+  .rojo { background: #ef4444; color: #fff; }
+  #map { width: 100%; height: 360px; border-radius: 12px; border: 2px solid #ddd; }
+  .info { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-size: 15px; line-height: 1.7; margin-top: 10px; }
+  .alerta { display: none; margin-top: 12px; background: #fef2f2; border: 2px solid #ef4444; color: #dc2626; text-align: center; font-weight: bold; font-size: 18px; padding: 14px; border-radius: 12px; animation: parpadeo 1s infinite; }
+  @keyframes parpadeo { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  .paradas-lista { margin-top: 10px; font-size: 14px; }
+  .paradas-lista button { width: 100%; text-align: left; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .paradas-lista button.activo { background: #dcfce7; border-color: #22c55e; font-weight: bold; }
+  .footer { text-align: center; font-size: 12px; color: #888; padding: 12px; }
+</style>
+</head>
+<body>
 
-<div class="toggle off" id="box-whats">
-<div class="switch">💬 ¿AVISARME POR WHATSAPP 5 MIN ANTES?</div>
-<p style="font-size:12px;margin:6px 0">Te aviso cuando la combi esté a 5 min de tu parada</p>
-<button onclick="toggleWhats()" id="btn-whats-toggle" style="background:#25D366;color:white;border:0;padding:12px 20px;border-radius:10px;font-weight:bold;font-size:14px">🔕 ACTIVAR AVISO WHATSAPP</button>
-<p id="estado-whats" style="font-size:12px;margin:6px 0">Apagado - Solo suena en la página</p>
+<header>
+  <h1>🚌 ¿DÓNDE VIENE MI COMBI?</h1>
+  <p>Tula - San Pedro • En vivo • Versión 1</p>
+</header>
+
+<div class="wrap">
+  <label for="parada">📍 Selecciona tu parada:</label>
+  <select id="parada">
+    <option value="">-- Elige tu parada --</option>
+  </select>
+
+  <div class="btns">
+    <button class="verde" onclick="iniciarSeguimiento()">▶ Iniciar seguimiento</button>
+    <button class="gris" onclick="usarMiUbicacion()">📍 Usar mi ubicación</button>
+  </div>
+  <div class="btns">
+    <button class="amarillo" onclick="probarSonido()">🔊 Probar sonido</button>
+    <button class="gris" onclick="actualizarPagina()">🔄 Actualizar</button>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="info">
+    <div>📍 <b>Tu parada:</b> <span id="txtParada">--</span></div>
+    <div>📍 <b>Distancia a la parada:</b> <span id="txtDist">--</span></div>
+    <div>🚍 <b>La combi viene en:</b> <span id="txtTiempo">--</span></div>
+    <div>🔊 <b>Alerta por sonido:</b> <span id="txtSonido">No activada</span></div>
+    <div>🟢 <b>Estado:</b> <span id="txtEstado">Esperando que elijas parada</span></div>
+  </div>
+
+  <div class="alerta" id="cajaAlerta">🔔 ¡YA VIENE TU COMBI! ¡PREPÁRATE!</div>
+
+  <div class="paradas-lista" id="listaParadas"></div>
+
+  <div class="footer">Solo suena en esta página. Sin WhatsApp. Sin abrir otras apps.</div>
 </div>
 
-<button class="whats" id="btn-abrir-whats" onclick="abrirWhats()">💬 ABRIR WHATSAPP - MI COMBI LLEGA EN 5 MIN</button>
-
-<div id="alerta" class="alerta"><b>🔔 ¡TU COMBI ESTÁ A 2 MIN!</b><br><span id="alerta-t"></span></div>
-<div id="map"></div>
-<button class="btn" onclick="map.setView([20.045,-99.333],13)">📍 VER TODA LA RUTA</button>
-<div class="card uno"><b>🔵 UNIDAD 3014 - <span class="eta" id="e3014">-- MIN</span></b><p id="i3014">Esperando GPS...</p><small id="t3014">Sin actualizar</small></div>
-<div class="card dos"><b>🟠 UNIDAD 3087 - <span class="eta" id="e3087">-- MIN</span></b><p id="i3087">Esperando GPS...</p><small id="t3087">Sin actualizar</small></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script>
-firebase.initializeApp({apiKey:"AIzaSyBAnZJjbVfqvRsiKldxfCGyiIJ8rRLv1mc",authDomain:"ruta-tula-sanpedro.firebaseapp.com",databaseURL:"https://ruta-tula-sanpedro-default-rtdb.firebaseio.com",projectId:"ruta-tula-sanpedro"});
-var db=firebase.database(); var TULA=[20.0528,-99.3428], SP=[19.9967,-99.3136];
-var PAR=[["🚌 Terminal Tula",20.057641,-99.3436],["🏛️ Presidencia",20.051927,-99.333021],["➡️ Entrada Cielito",20.0525,-99.329],["⬅️ Salida Cielito",20.055,-99.3275],["🦐 Conchal",20.056564,-99.326398]];
-var map, m3014, m3087, mYo=null, miLat=null, miLng=null, d3014=null, d3087=null, p3014=null, p3087=null, av3014=false, av3087=false, esParada=false, nombreParada="tu parada";
-var marcadoresParadas=[];
-// NUEVO: Aviso WhatsApp 5 min
-var whatsActivo=false, yaAvisoWhats3014=false, yaAvisoWhats3087=false, ultimoMensajeWhats="";
-function toggleWhats(){
-  whatsActivo=!whatsActivo;
-  var b=document.getElementById("btn-whats-toggle"), box=document.getElementById("box-whats"), est=document.getElementById("estado-whats");
-  if(whatsActivo){b.innerText="✅ AVISO WHATSAPP ACTIVADO - TOCA PARA APAGAR";b.style.background="#0E7A3E";box.classList.remove("off");est.innerText="✅ Encendido - Te avisaré cuando falten 5 min. Deja la página abierta.";alert("✅ Listo. Cuando la combi esté a 5 min de tu parada te va a salir el botón verde de WhatsApp. Deja la página abierta.");}
-  else{b.innerText="🔕 ACTIVAR AVISO WHATSAPP";b.style.background="#25D366";box.classList.add("off");est.innerText="Apagado - Solo suena en la página";document.getElementById("btn-abrir-whats").classList.remove("on");yaAvisoWhats3014=false;yaAvisoWhats3087=false;}
-}
-function abrirWhats(){
-  if(!ultimoMensajeWhats) ultimoMensajeWhats="Mi combi llega en 5 min";
-  var url="https://wa.me/?text="+encodeURIComponent("🚌 "+ultimoMensajeWhats+" - Ruta Tula - San Pedro");
-  window.open(url,"_blank");
-}
-function revisarWhats(u, min){
-  if(!whatsActivo) return;
-  if(min===5){
-    if(u=="3014"&&!yaAvisoWhats3014){yaAvisoWhats3014=true;ultimoMensajeWhats="Mi combi 3014 llega en 5 min a "+nombreParada;document.getElementById("btn-abrir-whats").classList.add("on");document.getElementById("btn-abrir-whats").innerText="💬 ABRIR WHATSAPP - LA 3014 LLEGA EN 5 MIN A "+nombreParada.toUpperCase();if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);}
-    if(u=="3087"&&!yaAvisoWhats3087){yaAvisoWhats3087=true;ultimoMensajeWhats="Mi combi 3087 llega en 5 min a "+nombreParada;document.getElementById("btn-abrir-whats").classList.add("on");document.getElementById("btn-abrir-whats").innerText="💬 ABRIR WHATSAPP - LA 3087 LLEGA EN 5 MIN A "+nombreParada.toUpperCase();if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);}
+// ================= PARADAS =================
+// Si quieres cambiar una parada, cambia el nombre y las coordenadas aquí
+var paradas = [
+  { nombre: "San Pedro - Base", lat: 20.0530, lng: -99.3420 },
+  { nombre: "San Pedro - Centro", lat: 20.0520, lng: -99.3350 },
+  { nombre: "San Pedro - Salida", lat: 20.0510, lng: -99.3250 },
+  { nombre: "Camino a Tula", lat: 20.0550, lng: -99.3150 },
+  { nombre: "Tula - Entrada", lat: 20.0580, lng: -99.3050 },
+  { nombre: "Tula - Centro", lat: 20.0550, lng: -99.2950 },
+  { nombre: "Tula - Terminal", lat: 20.0520, lng: -99.2900 }
+];
+
+// ================= MAPA =================
+var map = L.map('map').setView([20.053, -99.32], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// Dibujar ruta
+var puntosRuta = paradas.map(function(p){ return [p.lat, p.lng]; });
+L.polyline(puntosRuta, { color: '#22c55e', weight: 5, opacity: 0.8 }).addTo(map);
+
+// Dibujar marcadores de paradas
+paradas.forEach(function(p, i){
+  L.marker([p.lat, p.lng]).addTo(map).bindPopup((i+1) + ". " + p.nombre);
+});
+
+// Llenar el select y la lista
+var select = document.getElementById('parada');
+var lista = document.getElementById('listaParadas');
+paradas.forEach(function(p, i){
+  var opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = p.nombre;
+  select.appendChild(opt);
+
+  var btn = document.createElement('button');
+  btn.textContent = "📍 " + p.nombre;
+  btn.onclick = function(){
+    select.value = i;
+    document.querySelectorAll('#listaParadas button').forEach(function(b){ b.classList.remove('activo'); });
+    btn.classList.add('activo');
+    document.getElementById('txtParada').textContent = p.nombre;
+    map.setView([p.lat, p.lng], 15);
+  };
+  lista.appendChild(btn);
+});
+
+select.onchange = function(){
+  if(this.value !== ""){
+    document.getElementById('txtParada').textContent = paradas[this.value].nombre;
   }
-  if(min>6){if(u=="3014")yaAvisoWhats3014=false;if(u=="3087")yaAvisoWhats3087=false;}
+};
+
+// ================= COMBI =================
+var combiMarker = L.marker([paradas[0].lat, paradas[0].lng], {
+  icon: L.divIcon({ html: '<div style="font-size:30px;">🚌</div>', className: '', iconSize: [30, 30] })
+}).addTo(map).bindPopup("Combi");
+
+var miMarker = null;
+var posCombi = 0;
+var intervalo = null;
+var sonidoActivado = false;
+var yaAlerto = false;
+var paradaElegida = -1;
+
+// ================= SONIDO - SOLO EN LA PÁGINA =================
+function sonarAlerta(){
+  // Intento 1: sonido de alarma
+  try {
+    var a = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+    a.play();
+  } catch(e){}
+
+  // Intento 2: beep con el navegador (funciona aunque falle el audio)
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    for(var i=0;i<3;i++){
+      var o = ctx.createOscillator();
+      o.connect(ctx.destination);
+      o.start(ctx.currentTime + i*0.5);
+      o.stop(ctx.currentTime + i*0.5 + 0.4);
+    }
+  } catch(e){}
 }
-function km(a,b,c,d){var R=6371,la=(c-a)*Math.PI/180,lo=(d-b)*Math.PI/180,x=Math.sin(la/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(lo/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
-function ubi(){if(!navigator.geolocation){alert("Abre en Chrome, no en WhatsApp");return}navigator.geolocation.getCurrentPosition(function(p){miLat=p.coords.latitude;miLng=p.coords.longitude;esParada=false;nombreParada="tu ubicación";document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));marcadoresParadas.forEach(m=>{m.setStyle({fillColor:"#0E7A3E",radius:9})});document.getElementById("yo").innerHTML="📍 Tú aquí • Tiempo a TI";if(!mYo){mYo=L.circleMarker([miLat,miLng],{radius:10,color:"white",fillColor:"#111",fillOpacity:1,weight:3}).addTo(map)}else mYo.setLatLng([miLat,miLng]);map.setView([miLat,miLng],14);act()},function(e){alert("Dale PERMITIR ubicación. Si ya le diste NO, dale al candadito 🔒 arriba > Ubicación > Permitir")},{enableHighAccuracy:true,timeout:10000})}
-function par(v,i){
-  var s=v.split(","); miLat=parseFloat(s[0]); miLng=parseFloat(s[1]); esParada=true; nombreParada=PAR[i][0];
-  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
-  document.querySelectorAll(".chip")[i].classList.add("on");
-  marcadoresParadas.forEach(m=>{m.setStyle({fillColor:"#0E7A3E",radius:9,color:"white",weight:3})});
-  if(marcadoresParadas[i]){marcadoresParadas[i].setStyle({fillColor:"#D32F2F",radius:14,color:"white",weight:4}); marcadoresParadas[i].bringToFront();}
-  document.getElementById("yo").innerHTML="🚏 Parada: <b>"+PAR[i][0]+"</b> • 🔴 Punto ROJO";
-  if(!mYo){mYo=L.circleMarker([miLat,miLng],{radius:10,color:"white",fillColor:"#D32F2F",fillOpacity:1,weight:3}).addTo(map)}else{mYo.setLatLng([miLat,miLng]);mYo.setStyle({fillColor:"#D32F2F"})}
-  map.setView([miLat,miLng],15);act();
+
+function probarSonido(){
+  sonidoActivado = true;
+  document.getElementById('txtSonido').textContent = "Activada ✅";
+  sonarAlerta();
+  alert("¿Escuchaste el sonido? Así va a sonar cuando venga tu combi.");
 }
-function eta(d){if(miLat==null){var k=km(d.lat,d.lng,TULA[0],TULA[1]);return{txt:Math.round(k/0.5)+" MIN A TULA",km:k,min:Math.round(k/0.5)}}var k2=km(d.lat,d.lng,miLat,miLng);if(k2<0.15)return{txt:"¡YA LLEGÓ! 🎉",km:k2,min:0};var m=Math.max(1,Math.round(k2/0.5));return{txt:"A "+m+(esParada?" MIN A TU PARADA":" MIN DE TI"),km:k2,min:m}}
-function act(){if(d3014)pintar("3014",d3014);if(d3087)pintar("3087",d3087)}
-function pintar(u,d){var seg=Math.floor((Date.now()-d.timestamp)/1000);if(seg>300){document.getElementById("i"+u).innerText="Sin transmitir hace "+Math.floor(seg/60)+" min";document.getElementById("e"+u).innerText="-- MIN";return}if(u=="3014")p3014=d;else p3087=d;var e=eta(d);revisarWhats(u,e.min);if(miLat!=null&&e.min<=2&&e.min>0){if(u=="3014"&&!av3014){av3014=true;aviso("La 3014 a "+e.min+" min")}if(u=="3087"&&!av3087){av3087=true;aviso("La 3087 a "+e.min+" min")}}if(e.min>3){if(u=="3014")av3014=false;if(u=="3087")av3087=false}document.getElementById("e"+u).innerText=e.txt;document.getElementById("i"+u).innerText=Math.round(d.velocidad||0)+" km/h • A "+e.km.toFixed(2)+" km";document.getElementById("t"+u).innerText="Hace "+seg+" seg";var mk=u=="3014"?m3014:m3087;var lat=d.lat,lng=d.lng;if(p3014&&p3087&&km(p3014.lat,p3014.lng,p3087.lat,p3087.lng)<0.05&&u=="3087"){lng+=0.0012;lat+=0.0004}mk.setLatLng([lat,lng]);mk.bindPopup("<b>"+u+"</b><br>"+e.txt)}
-function aviso(t){document.getElementById("alerta").classList.add("on");document.getElementById("alerta-t").innerText=t;if(navigator.vibrate)navigator.vibrate([500,200,500])}
-map=L.map("map").setView([20.045,-99.333],13);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
-setTimeout(()=>{map.invalidateSize()},600);
-L.marker(TULA).addTo(map).bindPopup("📍 TULA");L.marker(SP).addTo(map).bindPopup("🏁 SAN PEDRO");L.polyline([TULA,SP],{color:"#0E7A3E",weight:5,dashArray:"10,8"}).addTo(map);
-PAR.forEach((p,i)=>{var mk=L.circleMarker([p[1],p[2]],{radius:9,color:"white",fillColor:"#0E7A3E",fillOpacity:1,weight:3}).addTo(map).bindPopup("<b>"+p[0]+"</b><br><button onclick=\"par('"+p[1]+","+p[2]+"',"+i+")\" style='background:#D32F2F;color:white;border:0;padding:8px 12px;border-radius:8px;font-weight:bold'>USAR ESTA PARADA</button>");marcadoresParadas.push(mk)});
-function pin(c,t){return L.divIcon({className:"",html:"<div class='pin "+c+"'>"+t+"</div>",iconSize:[54,30],iconAnchor:[27,15]})}
-m3014=L.marker(TULA,{icon:pin("a","3014")}).addTo(map);m3087=L.marker(SP,{icon:pin("n","3087")}).addTo(map);
-function esc(u){db.ref("unidades/"+u).on("value",s=>{var d=s.val();if(!d)return;if(u=="3014")d3014=d;else d3087=d;pintar(u,d)})}
-esc("3014");esc("3087");
-</script></body></html>
+
+function usarMiUbicacion(){
+  if(!navigator.geolocation){ alert("Tu navegador no permite ubicación"); return; }
+  navigator.geolocation.getCurrentPosition(function(p){
+    var lat = p.coords.latitude;
+    var lng = p.coords.longitude;
+    if(miMarker) map.removeLayer(miMarker);
+    miMarker = L.marker([lat, lng]).addTo(map).bindPopup("Tú estás aquí").openPopup();
+    map.setView([lat, lng], 15);
+  }, function(){
+    alert("Activa el permiso de ubicación en tu celular");
+  });
+}
+
+function calcularDistanciaKm(lat1, lng1, lat2, lng2){
+  var R = 6371;
+  var dLat = (lat2-lat1) * Math.PI/180;
+  var dLng = (lng2-lng1) * Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function iniciarSeguimiento(){
+  var idx = document.getElementById('parada').value;
+  if(idx === ""){ alert("Primero elige tu parada"); return; }
+  paradaElegida = parseInt(idx);
+  sonidoActivado = true;
+  yaAlerto = false;
+  document.getElementById('txtSonido').textContent = "Activada ✅";
+  document.getElementById('txtParada').textContent = paradas[paradaElegida].nombre;
+  document.getElementById('txtEstado').textContent = "Siguiendo combi...";
+  document.getElementById('cajaAlerta').style.display = "none";
+  if(intervalo) clearInterval(intervalo);
+  moverCombi();
+  intervalo = setInterval(moverCombi, 2000);
+}
+
+function moverCombi(){
+  if(paradaElegida < 0) return;
+  // V1: la combi avanza por la ruta en círculo para probar la alerta
+  posCombi = (posCombi + 1) % paradas.length;
+  var c = paradas[posCombi];
+  combiMarker.setLatLng([c.lat, c.lng]);
+
+  var destino = paradas[paradaElegida];
+  var distKm = calcularDistanciaKm(c.lat, c.lng, destino.lat, destino.lng);
+  var distTxt = distKm < 1 ? Math.round(distKm*1000) + " m" : distKm.toFixed(1) + " km";
+  document.getElementById('txtDist').textContent = distTxt;
+  var minutos = Math.max(1, Math.round(distKm * 2));
+  document.getElementById('txtTiempo').textContent = minutos + " min aprox.";
+
+  // Si está a menos de 500 metros, suena la alerta
+  if(distKm < 0.5 && !yaAlerto){
+    yaAlerto = true;
+    document.getElementById('cajaAlerta').style.display = "block";
+    document.getElementById('txtEstado').textContent = "¡YA VIENE!";
+    sonarAlerta();
+    setTimeout(sonarAlerta, 1500);
+    setTimeout(sonarAlerta, 3000);
+  }
+}
+
+function actualizarPagina(){
+  location.reload();
+}
+</script>
+
+</body>
+</html>
